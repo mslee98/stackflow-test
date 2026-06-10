@@ -1,0 +1,61 @@
+---
+description: 타이포그래피 — Pretendard(npm) + TDS 스케일 토큰
+alwaysApply: true
+---
+
+# Typography
+
+## 폰트
+
+토스 폰트는 사용하지 않는다. **Pretendard**를 npm으로 설치해 기본 sans-serif로 쓴다.
+
+```bash
+npm install pretendard
+```
+
+```css
+/* src/index.css */
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
+
+@theme {
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+```
+
+## 토큰 사용
+
+`fontSize`, `lineHeight` 하드코딩 금지. TDS `typography` 토큰 이름으로만 지정한다.
+
+```tsx
+import { Text } from '../design-system'
+
+<Text typography="t3" fontWeight="bold" color="grey900">제목</Text>
+<Text typography="t5">본문</Text>
+<Text typography="t6" color="grey500">보조 본문</Text>
+```
+
+구현 경로 (우선순위):
+1. `Text` 컴포넌트 + `getTypographyStyle()` (`tokens/typography.ts`)
+2. Tailwind `@utility typography-t5` 등 (`index.css`, 레이아웃 보조용)
+3. `@toss/tds-mobile` `Text` — **사용 금지**
+
+## fontWeight
+
+| 토큰 | CSS | 용도 |
+|------|-----|------|
+| regular | 400 | 기본 본문 |
+| medium | 500 | 강조 본문 |
+| semibold | 600 | 소제목 |
+| bold | 700 | 제목 |
+
+## 적용 원칙
+
+- 페이지 제목: `t1`~`t3` + `bold`/`semibold`
+- 본문: `t5` + `regular`
+- 보조·메타: `t6`~`t7`, `st11`~`st13`
+- `style={{ fontSize: 17 }}`, CSS `font-size`/`line-height` 직접 지정 금지
+- `text-sm`, `text-lg` 등 Tailwind 크기 유틸 대신 `Text` + typography 토큰 사용

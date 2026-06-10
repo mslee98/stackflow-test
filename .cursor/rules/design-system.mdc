@@ -1,0 +1,57 @@
+---
+description: 로컬 디자인 시스템 — 구조, import, 확장 규칙
+alwaysApply: true
+---
+
+# Design System (범용·독립)
+
+`src/design-system/`은 호스트 앱에 종속되지 않는 독립 패키지입니다.
+
+## Public API (`index.ts`)
+
+| Tier | 컴포넌트 |
+|------|----------|
+| Provider | `DSProvider`, `useDS` |
+| Tier 1 | `Text`, `Button`, `TextButton`, `Badge`, `Top` |
+| Tier 2 | `ListHeader`, `ListRow`, `Asset` |
+| Tab bar | `IconButton` (3단계 TDS API 예정) |
+
+## import 규칙
+
+```tsx
+import { DSProvider, Button, ListRow, Text, Top } from '../design-system'
+// ❌ 내부 경로 직접 import
+// ❌ @toss/tds-mobile
+```
+
+## 컴포넌트 선택
+
+| 용도 | 사용 |
+|------|------|
+| 읽기 텍스트 | `Text` (`typography` 필수) |
+| CTA / 무거운 액션 | `Button` (`color` + `variant` + `size`) |
+| 보조 링크·전체보기 | `TextButton` (`size` 필수) |
+| 상태 라벨 | `Badge` |
+| 페이지 헤더 | `Top` compound |
+| 섹션 헤더 | `ListHeader` compound |
+| 목록 행 | `ListRow` + `ListRow.Texts` |
+| 아이콘 프레임 | `Asset.Icon` (`icons/` 레지스트리) |
+| 하단 탭 | `IconButton` |
+
+## ParagraphText
+
+모든 텍스트 UI는 `ParagraphTextProps` 기반. `fontSize` 하드코딩 금지.
+
+## Provider
+
+```tsx
+<DSProvider config={{ hapticEnabled: true }}><App /></DSProvider>
+```
+
+## 구현 현황
+
+| 기능 | 상태 |
+|------|------|
+| Tier 1: Text, Button v2, TextButton, Badge, Top | ✅ |
+| Tier 2: ListHeader, ListRow v2, Asset, icons/ | ✅ |
+| FixedBottomCTA, IconButton TDS API, fontScale | 🔲 3단계 |

@@ -1,0 +1,37 @@
+---
+description: 색상 — TDS 팔레트를 로컬 colors 토큰으로 사용
+alwaysApply: true
+---
+
+# Colors
+
+`@toss/tds-colors`는 사용하지 않는다. TDS와 동일한 hex 팔레트를 `src/design-system/tokens/colors.ts`에서 export한다.
+
+```tsx
+import { colors } from '../design-system'
+
+<div style={{ backgroundColor: colors.blue500 }} />
+```
+
+Tailwind 사용 시 `slate-*` 대신 `@theme`에 등록된 TDS 이름을 쓴다: `text-grey-500`, `bg-blue-500`, `border-grey-200`.
+
+`src/index.css` `@theme`의 `--color-*` 값은 `colors.ts`와 **동기화**를 유지한다.
+
+## 시맨틱 매핑
+
+- 텍스트: `grey700`~`grey900`
+- 보조 텍스트: `grey500`~`grey600`
+- 주요 액션·링크: `blue500`~`blue600`
+- 에러: `red500`, 성공: `green500`, 주의: `yellow500`/`orange500`
+- 배경·구분선: `grey50`~`grey200`, `greyOpacity*`
+- 앱 배경: `colors.background` / `colors.greyBackground`
+
+## 금지
+
+- JSX/CSS에 hex 직접 입력 (`tokens/colors.ts` 정의부 제외)
+- `slate-*`, Tailwind 기본 `green-500` 등 비-TDS 팔레트 클래스
+- DS 컴포넌트에 임의 색 하드코딩 — semantic variant 또는 `colors.*` 사용
+
+## 딤·프레스
+
+터치 딤은 `src/index.css`의 `--press-dimmer-color`, `--press-dimmer-radial` 사용.

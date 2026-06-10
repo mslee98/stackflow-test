@@ -1,0 +1,36 @@
+---
+description: 터치 피드백 DS — hooks, primitives, components 규칙
+globs: src/design-system/**/*
+alwaysApply: false
+---
+
+# Touch Feedback Design System
+
+상세 스펙: `src/design-system/README.md`
+
+## 레이어
+
+`tokens` → `hooks` → `primitives` → `components`. 상위가 하위를 import; 역방향 금지.
+
+## 숫자 상수
+
+스케일·스프링·딜레이는 `tokens/motion.ts`, `tokens/touch.ts`만 수정. 컴포넌트에 `0.96` 등 하드코딩 금지.
+
+## 새 인터랙티브 컴포넌트
+
+1. `Pressable` 또는 `useTouchEffect` + `TouchDimmer` 조합
+2. `usePress` 경유 (300ms hold 유지)
+3. `willChange: transform`, `WebkitTapHighlightColor: transparent`
+4. 중첩 Pressable 지양 (`stopPropagation` 이슈)
+
+## Provider
+
+`DSProvider`로 앱 루트 감싸기. `useDS()` / 햅틱은 Provider 안에서만.
+
+## 햅틱
+
+`IconButton`만 `tickWeak`. `Button`/`ListRow`는 시각만. `config.hapticEnabled: false`면 no-op.
+
+## 룰 갱신
+
+컴포넌트·토큰·행동을 바꾸면 README와 이 파일의 해당 섹션을 함께 업데이트한다.
