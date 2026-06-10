@@ -1,6 +1,7 @@
 import type { ActivityComponentType } from '@stackflow/react'
 import { AppScreen } from '@stackflow/plugin-basic-ui'
 import TabLayout from '../../components/layout/TabLayout'
+import { ListRow } from '../../design-system'
 
 const MARKETS = [
   { symbol: 'BTC', name: '비트코인', price: '98,420,000', change: '+2.34%' },
@@ -17,24 +18,31 @@ const MarketTabActivity: ActivityComponentType<'MarketTabActivity'> = () => {
           {MARKETS.map((market) => (
             <li
               key={market.symbol}
-              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4"
+              className="overflow-hidden rounded-xl border border-grey-200 bg-white shadow-sm"
             >
-              <div>
-                <p className="font-semibold text-slate-900">{market.symbol}</p>
-                <p className="text-sm text-slate-500">{market.name}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-slate-900">₩{market.price}</p>
-                <p
-                  className={`text-sm ${
-                    market.change.startsWith('+')
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                  }`}
-                >
-                  {market.change}
-                </p>
-              </div>
+              <ListRow
+                contents={
+                  <ListRow.Texts
+                    type="2RowTypeA"
+                    top={market.symbol}
+                    topProps={{ fontWeight: 'semibold', color: 'grey900' }}
+                    bottom={market.name}
+                    bottomProps={{ color: 'grey500' }}
+                  />
+                }
+                right={
+                  <ListRow.Texts
+                    type="Right2RowTypeB"
+                    top={`₩${market.price}`}
+                    topProps={{ fontWeight: 'medium', color: 'grey900' }}
+                    bottom={market.change}
+                    bottomProps={{
+                      color: market.change.startsWith('+') ? 'green500' : 'red500',
+                    }}
+                  />
+                }
+                verticalPadding="medium"
+              />
             </li>
           ))}
         </ul>

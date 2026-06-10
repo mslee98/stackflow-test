@@ -1,6 +1,7 @@
 import type { ActivityComponentType } from '@stackflow/react'
 import { useFlow } from '@stackflow/react'
 import { AppScreen } from '@stackflow/plugin-basic-ui'
+import { Button, Text, Top } from '../design-system'
 
 const ScreenActivity: ActivityComponentType<'ScreenActivity'> = ({
   params: { depth = '1' },
@@ -16,34 +17,50 @@ const ScreenActivity: ActivityComponentType<'ScreenActivity'> = ({
         backButton: { onClick: () => pop() },
       }}
     >
-      <div className="flex flex-col gap-4 p-4">
-        <p className="text-sm text-slate-500">
-          현재 스택 깊이: <strong className="text-slate-900">{depth}</strong>
-        </p>
+      <Top
+        title={
+          <Top.TitleParagraph typography="t3" fontWeight="bold">
+            스택 네비게이션
+          </Top.TitleParagraph>
+        }
+        subtitleBottom={
+          <Top.SubtitleParagraph>
+            현재 스택 깊이:{' '}
+            <Text typography="t6" fontWeight="bold" color="grey900" as="strong">
+              {depth}
+            </Text>
+          </Top.SubtitleParagraph>
+        }
+        className="!px-4 !pt-4 !pb-2"
+      />
 
-        <button
-          type="button"
-          className="rounded-xl bg-blue-500 px-4 py-3 font-medium text-white active:bg-blue-600"
+      <div className="flex flex-col gap-4 px-4 pb-4">
+        <Button
+          color="primary"
+          variant="fill"
+          display="full"
           onClick={() => push('ScreenActivity', { depth: nextDepth })}
         >
           다음 화면 Push (depth {nextDepth})
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-900 active:bg-slate-50"
+        <Button
+          color="light"
+          variant="fill"
+          display="full"
           onClick={() => push('BottomSheetActivity', {})}
         >
           바텀시트 열기
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          className="rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-900 active:bg-slate-50"
+        <Button
+          color="light"
+          variant="fill"
+          display="full"
           onClick={() => push('ModalActivity', {})}
         >
           모달 열기
-        </button>
+        </Button>
       </div>
     </AppScreen>
   )

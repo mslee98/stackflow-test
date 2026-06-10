@@ -1,12 +1,13 @@
 import { useFlow } from '@stackflow/react'
 import { TABS, type TabId } from '../../constants/tabs'
+import { IconButton } from '../../design-system'
 
 type BottomNavProps = {
   activeTab: TabId
 }
 
 function TabIcon({ tabId, active }: { tabId: TabId; active: boolean }) {
-  const color = active ? 'text-blue-500' : 'text-slate-400'
+  const color = active ? 'text-blue-500' : 'text-grey-400'
 
   const icons: Record<TabId, React.ReactNode> = {
     home: (
@@ -45,23 +46,16 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
 
           return (
             <li key={tab.id} className="flex-1">
-              <button
-                type="button"
-                className="flex h-full w-full flex-col items-center justify-center gap-0.5 active:bg-slate-50"
+              <IconButton
+                active={active}
+                label={tab.label}
                 aria-current={active ? 'page' : undefined}
                 onClick={() => {
                   if (!active) replace(tab.activity, {})
                 }}
               >
                 <TabIcon tabId={tab.id} active={active} />
-                <span
-                  className={`text-[11px] font-medium ${
-                    active ? 'text-blue-500' : 'text-slate-400'
-                  }`}
-                >
-                  {tab.label}
-                </span>
-              </button>
+              </IconButton>
             </li>
           )
         })}

@@ -1,6 +1,7 @@
 import type { ActivityComponentType } from '@stackflow/react'
 import { AppScreen } from '@stackflow/plugin-basic-ui'
 import TabLayout from '../../components/layout/TabLayout'
+import { ListHeader, ListRow, Top } from '../../design-system'
 
 const MENU_ITEMS = [
   { label: '내 자산', value: '₩12,450,000' },
@@ -14,27 +15,57 @@ const MyTabActivity: ActivityComponentType<'MyTabActivity'> = () => {
     <AppScreen appBar={{ title: '내정보' }}>
       <TabLayout activeTab="my">
         <div className="p-4">
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5">
-            <p className="text-sm text-slate-500">안녕하세요</p>
-            <p className="mt-1 text-xl font-bold text-slate-900">사용자님</p>
+          <div className="mb-6 overflow-hidden rounded-2xl border border-grey-200 bg-white">
+            <Top
+              title={
+                <Top.TitleParagraph typography="st5" fontWeight="bold">
+                  사용자님
+                </Top.TitleParagraph>
+              }
+              subtitleTop={
+                <Top.SubtitleParagraph typography="t6" color="grey500">
+                  안녕하세요
+                </Top.SubtitleParagraph>
+              }
+              className="!px-5 !pt-5 !pb-4"
+            />
           </div>
 
-          <ul className="flex flex-col gap-2">
+          <ListHeader
+            title={
+              <ListHeader.TitleParagraph typography="t5" fontWeight="bold">
+                메뉴
+              </ListHeader.TitleParagraph>
+            }
+            className="!px-0"
+          />
+
+          <ul className="mt-1 flex flex-col gap-2">
             {MENU_ITEMS.map((item) => (
-              <li key={item.label}>
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left active:bg-slate-50"
-                >
-                  <span className="font-medium text-slate-900">
-                    {item.label}
-                  </span>
-                  {item.value && (
-                    <span className="text-sm font-semibold text-blue-500">
-                      {item.value}
-                    </span>
-                  )}
-                </button>
+              <li
+                key={item.label}
+                className="overflow-hidden rounded-xl border border-grey-200 bg-white shadow-sm"
+              >
+                <ListRow
+                  contents={
+                    <ListRow.Texts
+                      type="2RowTypeA"
+                      top={item.label}
+                      topProps={{ fontWeight: 'semibold', color: 'grey900' }}
+                    />
+                  }
+                  right={
+                    item.value ? (
+                      <ListRow.Texts
+                        type="Right1RowTypeE"
+                        top={item.value}
+                        topProps={{ fontWeight: 'semibold', color: 'blue500' }}
+                      />
+                    ) : undefined
+                  }
+                  arrowType={item.value ? 'none' : 'right'}
+                  verticalPadding="medium"
+                />
               </li>
             ))}
           </ul>

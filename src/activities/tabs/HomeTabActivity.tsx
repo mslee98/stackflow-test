@@ -2,6 +2,7 @@ import type { ActivityComponentType } from '@stackflow/react'
 import { useFlow } from '@stackflow/react'
 import { AppScreen } from '@stackflow/plugin-basic-ui'
 import TabLayout from '../../components/layout/TabLayout'
+import { ListRow, Text } from '../../design-system'
 
 const TEST_ITEMS = [
   {
@@ -31,23 +32,30 @@ const HomeTabActivity: ActivityComponentType<'HomeTabActivity'> = () => {
     <AppScreen appBar={{ title: 'TradeFlow' }}>
       <TabLayout activeTab="home">
         <div className="flex flex-col gap-4 p-4">
-          <p className="text-sm text-slate-500">
+          <Text typography="t6" color="grey500" as="p">
             Stackflow 네비게이션을 테스트해보세요.
-          </p>
+          </Text>
 
           <ul className="flex flex-col gap-3">
             {TEST_ITEMS.map((item) => (
-              <li key={item.label}>
-                <button
-                  type="button"
-                  className="w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-colors active:bg-slate-50"
+              <li
+                key={item.label}
+                className="overflow-hidden rounded-xl border border-grey-200 shadow-sm"
+              >
+                <ListRow
+                  contents={
+                    <ListRow.Texts
+                      type="2RowTypeA"
+                      top={item.label}
+                      topProps={{ fontWeight: 'semibold', color: 'grey900' }}
+                      bottom={item.description}
+                      bottomProps={{ color: 'grey500' }}
+                    />
+                  }
+                  arrowType="right"
+                  verticalPadding="medium"
                   onClick={() => item.action(push)}
-                >
-                  <p className="font-semibold text-slate-900">{item.label}</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {item.description}
-                  </p>
-                </button>
+                />
               </li>
             ))}
           </ul>
