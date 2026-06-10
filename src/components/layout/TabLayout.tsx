@@ -4,14 +4,19 @@ import BottomNav from './BottomNav'
 
 type TabLayoutProps = {
   activeTab: TabId
+  onTabChange: (tabId: TabId) => void
   children: ReactNode
 }
 
-export default function TabLayout({ activeTab, children }: TabLayoutProps) {
+export default function TabLayout({
+  activeTab,
+  onTabChange,
+  children,
+}: TabLayoutProps) {
   return (
     <>
       <div className="tab-content">{children}</div>
-      <BottomNav activeTab={activeTab} />
+      <BottomNav activeTab={activeTab} onTabChange={onTabChange} />
     </>
   )
 }

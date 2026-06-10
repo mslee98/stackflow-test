@@ -14,7 +14,7 @@ alwaysApply: false
 
 ## 숫자 상수
 
-스케일·스프링·딜레이는 `tokens/motion.ts`, `tokens/touch.ts`만 수정. 컴포넌트에 `0.96` 등 하드코딩 금지.
+스케일·전환·딤·딜레이는 `tokens/motion.ts`, `tokens/touch.ts`만 수정. 컴포넌트에 `0.96`·`0.15` 등 하드코딩 금지. 상태 전환은 `transition.easeInOut100`(100ms), 딤은 black + `PRESS_DIMMER_OPACITY`.
 
 ## 새 인터랙티브 컴포넌트
 

@@ -14,12 +14,8 @@
  */
 
 :root {
-  --press-dimmer-color: rgba(0, 0, 0, 0.08);
-  --press-dimmer-radial: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0.12) 0%,
-    transparent 70%
-  );
+  /* TDS interaction dimmer: black + opacity 0.15 on press (TouchDimmer) */
+  --press-dimmer-opacity: 0.15;
 
   /* Button v2 — color × variant (index.css @theme과 동기화) */
   --button-primary-fill-bg: #3182f6;
@@ -32,4 +28,33 @@
   --button-danger-fill-text: #ffffff;
   --button-light-fill-bg: #ffffff;
   --button-light-fill-border: #e5e8eb;
+}
+
+/*
+ * Mobile app UX — 드래그 블록 지정·복사·이미지 드래그 방지.
+ * 입력·편집 가능 영역과 .selectable 만 텍스트 선택 허용.
+ */
+*,
+*::before,
+*::after {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+img,
+svg,
+a {
+  -webkit-user-drag: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable='true'],
+.selectable,
+.selectable * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }

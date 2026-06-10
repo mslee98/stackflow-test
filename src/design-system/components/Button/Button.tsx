@@ -1,6 +1,7 @@
 /**
  * @fileoverview TDS Button v2 — Action Primitive (박스형).
  *
+ * Button 레이어 구조: 단색 bg → content(z-10). press 피드백은 scale만.
  * FixedBottomCTA 등 CTA의 엔진 역할을 합니다.
  */
 import {
@@ -10,13 +11,13 @@ import {
 } from 'framer-motion'
 import { useCallback, type ReactNode } from 'react'
 import { useTouchEffect } from '../../hooks/useTouchEffect'
+import ButtonLayers from '../../primitives/ButtonLayers'
 import ParagraphTextRenderer from '../../primitives/ParagraphTextRenderer'
-import TouchDimmer from '../../primitives/TouchDimmer'
-import { spring } from '../../tokens/motion'
+import { transition } from '../../tokens/motion'
 import {
   buttonDisplayMap,
   buttonSizeMap,
-  getButtonColorClasses,
+  getButtonTextClass,
   type ButtonColor,
   type ButtonDisplay,
   type ButtonSize,
@@ -51,14 +52,20 @@ export default function Button({
   const sizeConfig = buttonSizeMap[size]
 
   const animatePressed = useCallback(() => {
-    controls.start({ scale: touchScale.default, transition: spring.rapid })
+    controls.start({
+      scale: touchScale.default,
+      transition: transition.easeInOut100,
+    })
   }, [controls])
 
   const animateReleased = useCallback(() => {
-    controls.start({ scale: 1, transition: spring.quick })
+    controls.start({
+      scale: 1,
+      transition: transition.easeInOut100,
+    })
   }, [controls])
 
-  const { pressed, touchEffectProps } = useTouchEffect({
+  const { touchEffectProps } = useTouchEffect({
     disabled: isDisabled,
     onPressStart: animatePressed,
     onPressEnd: animateReleased,
@@ -70,9 +77,9 @@ export default function Button({
       type="button"
       animate={controls}
       disabled={isDisabled}
-      className={`relative items-center justify-center overflow-hidden rounded-xl font-medium disabled:opacity-50 ${buttonDisplayMap[display]} ${sizeConfig.className} ${getButtonColorClasses(color, variant)} ${className}`}
+      className={`relative items-center justify-center overflow-hidden rounded-xl font-medium disabled:opacity-50 ${!isDisabled ? 'cursor-pointer' : ''} ${buttonDisplayMap[display]} ${sizeConfig.className} ${getButtonTextClass(color, variant)} ${className}`}
       style={{
-        willChange: 'transform',
+        willChange: 'scale',
         WebkitTapHighlightColor: 'transparent',
         transform: 'translateZ(0)',
       }}
@@ -80,7 +87,8 @@ export default function Button({
       {...touchEffectProps}
       {...rest}
     >
-      <span className="relative z-[1] flex items-center justify-center gap-2">
+      <ButtonLayers color={color} variant={variant} />
+      <span className="relative z-10 flex items-center justify-center gap-2">
         {loading && (
           <span
             className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
@@ -101,7 +109,6 @@ export default function Button({
           children
         )}
       </span>
-      <TouchDimmer pressed={pressed} variant="radial" />
     </motion.button>
   )
 }

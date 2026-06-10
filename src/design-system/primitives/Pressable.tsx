@@ -1,16 +1,15 @@
 import { motion, useAnimationControls, type HTMLMotionProps } from 'framer-motion'
 import { useCallback, type ReactNode } from 'react'
 import { useTouchEffect } from '../hooks/useTouchEffect'
-import { spring } from '../tokens/motion'
+import { transition } from '../tokens/motion'
 import { touchScale } from '../tokens/touch'
-import TouchDimmer, { type DimmerVariant } from './TouchDimmer'
+import TouchDimmer from './TouchDimmer'
 
 type PressableProps = {
   children: ReactNode
   className?: string
   disabled?: boolean
   scale?: number
-  dimmerVariant?: DimmerVariant
   withTouchEffect?: boolean
   onPressStart?: () => void
   onPressEnd?: () => void
@@ -21,7 +20,6 @@ export default function Pressable({
   className = '',
   disabled = false,
   scale = touchScale.default,
-  dimmerVariant = 'grey',
   withTouchEffect = true,
   onPressStart,
   onPressEnd,
@@ -34,14 +32,14 @@ export default function Pressable({
   const animatePressed = useCallback(() => {
     controls.start({
       scale,
-      transition: spring.rapid,
+      transition: transition.easeInOut100,
     })
   }, [controls, scale])
 
   const animateReleased = useCallback(() => {
     controls.start({
       scale: 1,
-      transition: spring.quick,
+      transition: transition.easeInOut100,
     })
   }, [controls])
 
@@ -65,7 +63,7 @@ export default function Pressable({
       animate={controls}
       className={`relative ${className}`}
       style={{
-        willChange: 'transform',
+        willChange: 'scale',
         WebkitTapHighlightColor: 'transparent',
         transform: 'translateZ(0)',
         ...style,
@@ -74,10 +72,8 @@ export default function Pressable({
       {...(withTouchEffect ? touchEffectProps : {})}
       {...rest}
     >
-      {children}
-      {withTouchEffect && (
-        <TouchDimmer pressed={pressed} variant={dimmerVariant} />
-      )}
+      <div className="relative z-10 h-full w-full">{children}</div>
+      {withTouchEffect && <TouchDimmer pressed={pressed} />}
     </motion.div>
   )
 }

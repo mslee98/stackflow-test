@@ -35,8 +35,12 @@ function buildManifest(subdir) {
   for (const filename of fs.readdirSync(srcDir)) {
     if (!filename.endsWith('.svg')) continue
     const name = pathToIconName(filename)
-    manifest[name] = filename
-    fs.copyFileSync(path.join(srcDir, filename), path.join(destDir, filename))
+    const destFilename = `${name}.svg`
+    manifest[name] = destFilename
+    fs.copyFileSync(
+      path.join(srcDir, filename),
+      path.join(destDir, destFilename),
+    )
   }
 
   return manifest

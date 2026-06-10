@@ -9,6 +9,7 @@
 | **ParagraphText** | `Text`, `Top`, `ListRow.Texts` 등 텍스트 UI가 **하나의 typography 토큰 체계**를 공유 |
 | **아이콘** | 600+ SVG를 **번들에 넣지 않고** `fetch` + 메모리 캐시로 로드 |
 | **터치 피드백** | 버튼·리스트·아이콘 버튼 누를 때 **스케일 축소 + 딤 + 스프링 복귀** |
+| **선택 방지** | `base.css`에서 드래그 블록 지정·복사·이미지 드래그 차단 (`input` 등은 예외) |
 
 ---
 
@@ -114,7 +115,7 @@ ParagraphTextProps (types/paragraphText.ts)
 
 Button (Action Primitive — motion.button)
 ListRow (3-slot: left | contents | right) → Pressable
-TextButton → Pressable
+TextButton → useTouchEffect + link dimmer
 IconButton → Pressable + useDS().generateHaptic
 Asset.Frame + Asset.Icon → Icon (fetch)
 
@@ -179,7 +180,7 @@ design-system/
 ├── package.json              # 추후 npm publish manifest
 ├── index.ts                  # Public API (외부 import 진입점)
 ├── README.md
-├── styles/base.css           # press 딤 CSS 변수
+├── styles/base.css           # press 딤 CSS 변수, 텍스트 선택·드래그 방지
 ├── provider/
 │   ├── DSProvider.tsx
 │   ├── DSContext.ts          # useDS()
@@ -291,9 +292,13 @@ TDS의 `ParagraphTextProps`와 같이, **모든 텍스트 UI가 typography 토�
 
 | prop | 값 |
 |------|-----|
-| `size` | `small` · `medium` · `large` (필수) |
-| `variant` | `clear` · `underline` · `arrow` |
+| `size` | `xsmall` · `small` · `medium` · `large` · `xlarge` · `xxlarge` (필수) |
+| `variant` | `clear` · `underline` · `arrow` (기본 `clear`) |
+| `arrowPlacement` | `block` · `inline` (기본 `block`, `variant="arrow"`일 때만) |
 | `color` | `ColorToken` (기본 `blue500`) |
+| `fontWeight` | 생략 시 size별 TDS `BFe` 기본값 |
+
+press 시 **scale 0.96** (`touchScale.default`, 100ms) + **dimmer** `#0220470D` (hover 없음, 터치·누름만). link negative margin으로 터치 영역을 확장합니다. `disabled` opacity는 `0.38`입니다.
 
 #### `Badge`
 
@@ -524,24 +529,27 @@ import { Icon, ICON } from './design-system'
 
 **300ms 유지**: 손을 뗀 직후에도 잠깐 눌린 상태를 유지해 깜빡임을 방지합니다 (TDS와 동일).
 
-### `TouchDimmer` — 2레이어 피드백
+### `TouchDimmer` — TDS interaction dimmer
 
-1. **스케일** — `transform: scale(0.96)` (IconButton은 `0.9`)
-2. **딤** — 위에 겹친 반투명 오버레이
+1. **스케일** — `transform: scale(0.96)` (IconButton은 `0.9`), `100ms ease-in-out`
+2. **딤** — `bg-black` + opacity `0` → `0.15` (`PRESS_DIMMER_OPACITY`), `100ms ease-in-out`
+3. **콘텐츠** — `relative z-10` (딤 아래, 텍스트 선명)
 
-| variant | 사용처 |
-|---------|--------|
-| `radial` | `Button` |
-| `grey` | `ListRow`, `TextButton`, `IconButton` |
+### `Button` — TDS tds-mobile-button 레이어
+
+1. **Primary background** — `buttonLayerMap` solid color
+2. **단색 배경** — `ButtonLayers` fill background만 사용 (radial glow 없음)
+3. **Content** — `relative z-10`
+4. **Dimmer** — `TouchDimmer` (위 스펙)
 
 ### 컴포넌트별 스펙
 
 | 컴포넌트 | 기반 | scale | 딤 | 햅틱 |
 |---------|------|-------|-----|------|
-| `Button` | `motion.button` | 0.96 | radial | — |
-| `ListRow` | `Pressable` | 0.96 | grey | — |
-| `TextButton` | `Pressable` | 0.96 | grey | — |
-| `IconButton` | `Pressable` | 0.9 | grey | `tickWeak` |
+| `Button` | `motion.button` | 0.96 | 균일 | — |
+| `ListRow` | `Pressable` | 0.96 | 균일 | — |
+| `TextButton` | `useTouchEffect` + dimmer | 0.96 | variant·size별 inset (press만) | — |
+| `IconButton` | `Pressable` | 0.9 | 균일 | `tickWeak` |
 
 ### 눌림 타임라인
 
@@ -605,10 +613,10 @@ getTypographyStyle('t5', 'regular') // { fontSize, lineHeight, fontWeight }
 
 | 상수 | 값 | 의미 |
 |------|-----|------|
-| `spring.rapid` | stiffness 1000, damping 55 | 누를 때 |
-| `spring.quick` | stiffness 800, damping 55 | 뗄 때 |
+| `transition.easeInOut100` | 100ms ease-in-out | 스케일·딤 opacity (TDS) |
 | `touchScale.default` | 0.96 | Button, ListRow |
 | `touchScale.compact` | 0.9 | IconButton |
+| `PRESS_DIMMER_OPACITY` | 0.15 | 눌림 딤 (black overlay) |
 | `PRESS_HOLD_MS` | 300 | 눌림 유지 시간 |
 
 스케일·스프링 값은 **컴포넌트가 아닌 `tokens/`만** 수정하세요.

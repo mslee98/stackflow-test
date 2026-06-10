@@ -92,12 +92,13 @@ npm run icons:generate
 
 ### 파일명 규칙
 
-TDS 아이콘은 파일명에 **쉼표로 구분된 alias**가 붙는 경우가 있습니다. manifest name은 **쉼표 앞 부분**만 사용합니다.
+소스·public 모두 **`icon-이름-mono.svg`** 형식을 사용합니다 (쉼표 alias 없음).
 
 | 파일명 | 등록되는 `name` |
 |--------|-----------------|
 | `icon-arrow-right-mono.svg` | `icon-arrow-right-mono` |
-| `icon-arrow-right-mono,arrow,right,...svg` | `icon-arrow-right-mono` |
+
+TDS 원본에 쉼표 alias가 붙은 파일은 `npm run icons:normalize`로 일괄 정리합니다.
 
 ---
 
@@ -204,6 +205,7 @@ SVG를 추가하고 `icons:generate`를 실행하면 타입이 갱신됩니다.
 | 상수 | name | 용도 |
 |------|------|------|
 | `ICON.ARROW_RIGHT` | `icon-arrow-right-mono` | ListRow 화살표 |
+| `ICON.ARROW_RIGHTWARDS` | `icon-arrow-rightwards-mono` | TextButton 화살표 |
 | `ICON.ARROW_RIGHT_SOLID` | `icon-arrow-solid-right-mono` | solid 화살표 |
 | `ICON.HOURGLASS` | `icon-u231B-mono` | 대기·로딩 |
 | `ICON.NAVIGATION_X` | `icon-navigation-x-mono` | 닫기 |

@@ -37,8 +37,8 @@ export { default as Pressable } from './primitives/Pressable'
 export type { ParagraphTextProps } from './types/paragraphText'
 
 // --- Tokens ---
-export { spring } from './tokens/motion'
-export { touchScale, PRESS_HOLD_MS } from './tokens/touch'
+export { spring, transition } from './tokens/motion'
+export { touchScale, PRESS_DIMMER_OPACITY, PRESS_HOLD_MS } from './tokens/touch'
 export { colors, type ColorToken } from './tokens/colors'
 export {
   typographyScale,
@@ -61,11 +61,16 @@ export {
 export {
   type TextButtonSize,
   type TextButtonVariant,
+  type TextButtonArrowPlacement,
+  textButtonTypographyMap,
+  textButtonFontWeightMap,
+  getParagraphLinkMetrics,
 } from './tokens/textButton'
 export { type FrameShape } from './tokens/asset'
 export {
   type ListRowVerticalPadding,
   type ListRowArrowType,
+  type ListRowVariant,
   type ListRowTextsType,
 } from './tokens/listRow'
 

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "icons:normalize": "node scripts/normalize-icon-filenames.mjs",
     "icons:generate": "node scripts/generate-icon-registry.mjs",
     "dev": "npm run icons:generate && vite",
     "build": "npm run icons:generate && tsc -b && vite build",

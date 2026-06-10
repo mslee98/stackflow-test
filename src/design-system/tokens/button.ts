@@ -1,9 +1,16 @@
+import { colors } from './colors'
 import type { TypographyToken } from './typography'
 
 export type ButtonColor = 'primary' | 'dark' | 'danger' | 'light'
 export type ButtonVariant = 'fill' | 'weak'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'xlarge'
 export type ButtonDisplay = 'inline' | 'block' | 'full'
+
+export type ButtonLayerStyle = {
+  background: string
+  textClass: string
+  border?: string
+}
 
 export const buttonSizeMap: Record<
   ButtonSize,
@@ -21,28 +28,70 @@ export const buttonDisplayMap: Record<ButtonDisplay, string> = {
   full: 'flex w-full',
 }
 
+/** Button layer tokens — 단색 background */
+export const buttonLayerMap: Record<
+  ButtonColor,
+  Record<ButtonVariant, ButtonLayerStyle>
+> = {
+  primary: {
+    fill: {
+      background: colors.blue500,
+      textClass: 'text-white',
+    },
+    weak: {
+      background: colors.blue50,
+      textClass: 'text-blue-500',
+    },
+  },
+  dark: {
+    fill: {
+      background: colors.grey900,
+      textClass: 'text-white',
+    },
+    weak: {
+      background: colors.grey100,
+      textClass: 'text-grey-900',
+    },
+  },
+  danger: {
+    fill: {
+      background: colors.red500,
+      textClass: 'text-white',
+    },
+    weak: {
+      background: colors.red50,
+      textClass: 'text-red-500',
+    },
+  },
+  light: {
+    fill: {
+      background: colors.background,
+      border: colors.grey200,
+      textClass: 'text-grey-900',
+    },
+    weak: {
+      background: colors.grey50,
+      textClass: 'text-grey-700',
+    },
+  },
+}
+
+export function getButtonTextClass(
+  color: ButtonColor,
+  variant: ButtonVariant,
+): string {
+  return buttonLayerMap[color][variant].textClass
+}
+
+/** @deprecated buttonLayerMap + getButtonTextClass 사용 */
 export function getButtonColorClasses(
   color: ButtonColor,
   variant: ButtonVariant,
 ): string {
-  const map: Record<ButtonColor, Record<ButtonVariant, string>> = {
-    primary: {
-      fill: 'bg-blue-500 text-white',
-      weak: 'bg-blue-50 text-blue-500',
-    },
-    dark: {
-      fill: 'bg-grey-900 text-white',
-      weak: 'bg-grey-100 text-grey-900',
-    },
-    danger: {
-      fill: 'bg-red-500 text-white',
-      weak: 'bg-red-50 text-red-500',
-    },
-    light: {
-      fill: 'border border-grey-200 bg-white text-grey-900',
-      weak: 'bg-grey-50 text-grey-700',
-    },
+  const layer = buttonLayerMap[color][variant]
+  const parts = [layer.textClass]
+  if (layer.border) {
+    parts.unshift('border border-grey-200')
   }
-
-  return map[color][variant]
+  return parts.join(' ')
 }

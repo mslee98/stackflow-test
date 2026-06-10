@@ -1,17 +1,23 @@
-import type { RegisteredActivityName } from '@stackflow/config'
-
-export type TabId = 'home' | 'market' | 'trade' | 'my'
+export type TabId = 'home' | 'ui' | 'trade' | 'my'
 
 export type TabItem = {
   id: TabId
   label: string
-  activity: RegisteredActivityName
+  title: string
   route: string
 }
 
 export const TABS: TabItem[] = [
-  { id: 'home', label: '홈', activity: 'HomeTabActivity', route: '/' },
-  { id: 'market', label: '마켓', activity: 'MarketTabActivity', route: '/market' },
-  { id: 'trade', label: '거래', activity: 'TradeTabActivity', route: '/trade' },
-  { id: 'my', label: '내정보', activity: 'MyTabActivity', route: '/my' },
+  { id: 'home', label: '홈', title: 'TradeFlow', route: '/' },
+  { id: 'ui', label: 'UI', title: 'UI', route: '/ui' },
+  { id: 'trade', label: '거래', title: '거래', route: '/trade' },
+  { id: 'my', label: '내정보', title: '내정보', route: '/my' },
 ]
+
+export function getTabFromPathname(pathname: string): TabId {
+  return TABS.find((tab) => tab.route === pathname)?.id ?? 'home'
+}
+
+export function getTabTitle(tabId: TabId): string {
+  return TABS.find((tab) => tab.id === tabId)?.title ?? 'TradeFlow'
+}

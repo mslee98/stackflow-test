@@ -34,4 +34,4 @@ Tailwind 사용 시 `slate-*` 대신 `@theme`에 등록된 TDS 이름을 쓴다:
 
 ## 딤·프레스
 
-터치 딤은 `src/index.css`의 `--press-dimmer-color`, `--press-dimmer-radial` 사용.
+터치 딤은 `TouchDimmer` — `bg-black` + `PRESS_DIMMER_OPACITY`(0.15), `base.css`의 `--press-dimmer-opacity`와 동기화.

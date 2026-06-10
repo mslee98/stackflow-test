@@ -33,6 +33,8 @@ export const colors = {
   blue300: '#64a8ff',
   blue400: '#4593fc',
   blue500: '#3182f6',
+  /** TDS tds-mobile-button primary fill radial glow center */
+  bluePressGlow: '#0059c3',
   blue600: '#2272eb',
   blue700: '#1b64da',
   blue800: '#1957c2',

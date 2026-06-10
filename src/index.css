@@ -135,7 +135,7 @@
   --frame-min-width: 360px;
   --sidebar-width: 360px;
   --sidebar-banner-width: 344px;
-  --bottom-nav-height: 56px;
+  --bottom-nav-height: 64px;
   --content-padding-bottom: calc(
     var(--bottom-nav-height) + env(safe-area-inset-bottom)
   );
@@ -235,6 +235,12 @@ body {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav ul {
+  display: flex;
+  align-items: center;
+  height: var(--bottom-nav-height);
 }
 
 @media (min-width: 1024px) {

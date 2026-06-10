@@ -7,7 +7,9 @@ import { ICON } from '../../icons/registry'
 import Pressable from '../../primitives/Pressable'
 import {
   listRowPaddingMap,
+  listRowVariantMap,
   type ListRowArrowType,
+  type ListRowVariant,
   type ListRowVerticalPadding,
 } from '../../tokens/listRow'
 import ListRowTexts from './ListRowTexts'
@@ -18,6 +20,7 @@ export type ListRowProps = {
   right?: ReactNode
   arrowType?: ListRowArrowType
   verticalPadding?: ListRowVerticalPadding
+  variant?: ListRowVariant
   withTouchEffect?: boolean
   disabled?: boolean
   className?: string
@@ -48,13 +51,15 @@ function ListRowRoot({
   right,
   arrowType = 'none',
   verticalPadding = 'medium',
+  variant = 'plain',
   withTouchEffect = true,
   disabled = false,
   className = '',
   onClick,
 }: ListRowProps) {
   const paddingClass = listRowPaddingMap[verticalPadding]
-  const baseClass = `w-full overflow-hidden bg-white text-left ${paddingClass} ${className}`
+  const variantClass = listRowVariantMap[variant]
+  const baseClass = `w-full overflow-hidden bg-white text-left ${paddingClass} ${variantClass} ${className}`
 
   if (!onClick) {
     return (
@@ -75,7 +80,6 @@ function ListRowRoot({
       tabIndex={disabled ? -1 : 0}
       withTouchEffect={withTouchEffect && !disabled}
       disabled={disabled}
-      dimmerVariant="grey"
       className={`${baseClass} ${disabled ? 'opacity-50' : 'cursor-pointer'}`}
       onClick={disabled ? undefined : onClick}
       onKeyDown={(event) => {

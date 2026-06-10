@@ -66,6 +66,14 @@ export async function fetchIconSvg(
   }
 
   const raw = await response.text()
+  const trimmed = raw.trimStart()
+  if (!trimmed.startsWith('<svg') && !trimmed.startsWith('<?xml')) {
+    if (import.meta.env.DEV) {
+      console.warn(`[Icon] SVG가 아닌 응답: ${url}`)
+    }
+    return null
+  }
+
   const prepared = resolved === 'mono' ? prepareMonoSvg(raw) : prepareFillSvg(raw)
   svgCache.set(key, prepared)
   return prepared
@@ -81,6 +89,7 @@ export function getIconSvg(name: string, source: IconSource = 'auto'): string | 
 /** 자주 쓰는 아이콘 name 상수 */
 export const ICON = {
   ARROW_RIGHT: 'icon-arrow-right-mono',
+  ARROW_RIGHTWARDS: 'icon-arrow-rightwards-mono',
   ARROW_RIGHT_SOLID: 'icon-arrow-solid-right-mono',
   HOURGLASS: 'icon-u231B-mono',
   NAVIGATION_X: 'icon-navigation-x-mono',

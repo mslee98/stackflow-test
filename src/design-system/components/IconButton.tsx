@@ -43,9 +43,8 @@ export default function IconButton({
       aria-current={ariaCurrent}
       tabIndex={disabled ? -1 : 0}
       scale={touchScale.compact}
-      dimmerVariant="grey"
       disabled={disabled}
-      className={`flex h-full w-full flex-col items-center justify-center gap-0.5 overflow-hidden ${disabled ? 'opacity-50' : 'cursor-pointer'} ${className}`}
+      className={`h-full w-full overflow-hidden ${disabled ? 'opacity-50' : 'cursor-pointer'} ${className}`}
       onPressStart={() => generateHaptic('tickWeak')}
       onClick={disabled ? undefined : onClick}
       onKeyDown={(event) => {
@@ -56,19 +55,22 @@ export default function IconButton({
         }
       }}
     >
-      {children}
-      {label &&
-        (typeof label === 'string' ? (
-          <Text
-            typography="st13"
-            fontWeight="medium"
-            color={active ? 'blue500' : 'grey400'}
-          >
-            {label}
-          </Text>
-        ) : (
-          label
-        ))}
+      <div className="flex h-full w-full flex-col items-center justify-center gap-0.5">
+        {children}
+        {label &&
+          (typeof label === 'string' ? (
+            <Text
+              typography="st13"
+              fontWeight="medium"
+              color={active ? 'blue500' : 'grey400'}
+              as="span"
+            >
+              {label}
+            </Text>
+          ) : (
+            label
+          ))}
+      </div>
     </Pressable>
   )
 }
