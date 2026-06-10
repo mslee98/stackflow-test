@@ -3,8 +3,20 @@ import { defineConfig } from '@stackflow/config'
 export const config = defineConfig({
   activities: [
     {
-      name: 'PlaygroundActivity',
+      name: 'HomeTabActivity',
       route: '/',
+    },
+    {
+      name: 'MarketTabActivity',
+      route: '/market',
+    },
+    {
+      name: 'TradeTabActivity',
+      route: '/trade',
+    },
+    {
+      name: 'MyTabActivity',
+      route: '/my',
     },
     {
       name: 'ScreenActivity',

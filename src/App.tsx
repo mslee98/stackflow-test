@@ -1,10 +1,11 @@
+import DesktopShell from './components/layout/DesktopShell'
 import { Stack } from './stackflow'
 
 function App() {
   return (
-    <div className="h-full w-full">
+    <DesktopShell>
       <Stack />
-    </div>
+    </DesktopShell>
   )
 }
 

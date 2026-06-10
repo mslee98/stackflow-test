@@ -1,6 +1,17 @@
 @import 'tailwindcss';
 @import '@stackflow/plugin-basic-ui/index.css';
 
+:root {
+  --frame-max-width: 616px;
+  --frame-min-width: 360px;
+  --sidebar-width: 360px;
+  --sidebar-banner-width: 344px;
+  --bottom-nav-height: 56px;
+  --content-padding-bottom: calc(
+    var(--bottom-nav-height) + env(safe-area-inset-bottom)
+  );
+}
+
 *,
 *::before,
 *::after {
@@ -24,13 +35,111 @@ body {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
-  background-color: #f8fafc;
+  background-color: #f0f3f6;
   color: #0f172a;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
 }
 
 #root {
-  max-width: 100%;
+  min-height: 100dvh;
+}
+
+/* 강남언니 스타일: flex row + justify-center */
+.page-shell {
+  min-height: 100dvh;
+  background-color: #f0f3f6;
+}
+
+.page-shell__inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
   margin: 0 auto;
+  min-height: 100dvh;
+}
+
+/* 좌측 다운로드 배너 — desktop(1024px) 이상 */
+.download-banner {
+  display: none;
+}
+
+.download-banner__inner {
+  height: 100%;
+  padding-top: 150px;
+}
+
+.download-banner__content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.download-banner__image {
+  width: 100%;
+}
+
+.download-banner__promo {
+  width: 100%;
+}
+
+/* 중앙 앱 프레임 (#frameMain) */
+.app-column {
+  position: relative;
+  width: 100%;
+  max-width: var(--frame-max-width);
+  min-width: var(--frame-min-width);
+  min-height: 100dvh;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.16);
+}
+
+/* 탭 콘텐츠 — 바텀바 높이만큼 패딩 */
+.tab-content {
+  padding-bottom: var(--content-padding-bottom);
+}
+
+/* 하단 네비 — 앱 프레임 내부 기준 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  z-index: 50;
+  width: 100%;
+  max-width: var(--frame-max-width);
+  transform: translateX(-50%);
+  border-top: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 데스크톱: 좌측 배너 노출 */
+@media (min-width: 1024px) {
+  .download-banner {
+    display: block;
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+
+  .download-banner__content {
+    position: fixed;
+    width: var(--sidebar-banner-width);
+  }
+}
+
+/* 모바일: 프레임 풀 너비, 그림자 제거 */
+@media (max-width: 1023px) {
+  .app-column {
+    max-width: 100%;
+    min-width: 0;
+    box-shadow: none;
+  }
+
+  body {
+    background-color: #fff;
+  }
 }

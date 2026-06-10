@@ -1,6 +1,9 @@
 declare module '@stackflow/config' {
   interface Register {
-    PlaygroundActivity: Record<string, never>
+    HomeTabActivity: Record<string, never>
+    MarketTabActivity: Record<string, never>
+    TradeTabActivity: Record<string, never>
+    MyTabActivity: Record<string, never>
     ScreenActivity: {
       depth: string
     }
