@@ -1,73 +1,63 @@
-# React + TypeScript + Vite
+# Stackflow Test
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Stackflow 기반 모바일 웹 앱 + **로컬 Mobile Design System** 프로젝트입니다.
 
-Currently, two official plugins are available:
+## 시작하기
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+`dev` / `build` 실행 시 아이콘 manifest(`icons:generate`)가 자동으로 생성됩니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 프로젝트 구조
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── design-system/     # 독립 React DS (TDS 토큰·패턴 기반)
+├── activities/        # Stackflow Activity 화면
+├── components/        # 앱 전용 레이아웃 (BottomNav 등)
+├── stackflow.ts       # Stackflow 설정
+└── index.css          # Pretendard + DS base.css + Tailwind @theme
+```
+
+## Design System
+
+TDS Tier 1·2 컴포넌트, SVG 아이콘, 터치 피드백이 포함된 로컬 디자인 시스템입니다.
+
+| 문서 | 내용 |
+|------|------|
+| [`src/design-system/README.md`](./src/design-system/README.md) | 전체 가이드 — Provider, 컴포넌트 API, 터치 피드백, 토큰 |
+| [`src/design-system/icons/README.md`](./src/design-system/icons/README.md) | 아이콘 추가·fetch 동작·mono/fill |
+
+### 빠른 예시
+
+```tsx
+import { DSProvider, Text, Button, ListRow } from './design-system'
+
+function App() {
+  return (
+    <DSProvider>
+      <Text typography="t5">본문</Text>
+      <Button color="primary" variant="fill" display="full">확인</Button>
+    </DSProvider>
+  )
+}
+```
+
+## 스크립트
+
+| 명령 | 설명 |
+|------|------|
+| `npm run dev` | 개발 서버 (아이콘 manifest 자동 생성) |
+| `npm run build` | 프로덕션 빌드 |
+| `npm run icons:generate` | SVG → manifest + `public/icons/` 복사 |
+
+## 기술 스택
+
+- React + TypeScript + Vite
+- Stackflow (`@stackflow/react`)
+- Framer Motion (DS 터치 피드백)
+- Pretendard (npm)
+- Tailwind CSS v4

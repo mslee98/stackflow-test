@@ -1,23 +1,42 @@
 # Mobile Design System
 
-토스 TDS(Toss Design System)의 **토큰 체계·터치 피드백 패턴**을 참고해 만든 **범용·독립** React 디자인 시스템입니다.
+토스 TDS(Toss Design System)의 **토큰 체계·컴포넌트 API·터치 피드백 패턴**을 참고해 만든 **범용·독립** React 디자인 시스템입니다.
 
-- **독립성**: Stackflow, Next.js, Vite 등 **어떤 React 앱**에서도 사용 가능. 앱 코드에 대한 import 없음.
-- **Provider 패턴**: TDS `TDSMobileProvider` / Toss 앱 Provider처럼 `DSProvider`로 앱 루트를 감싼 뒤 컴포넌트 사용.
-- **npm 배포 준비**: `package.json` + `styles/base.css` + Public API(`index.ts`) 분리. 추후 `npm install`로 설치 가능.
-- **파운데이션**: Pretendard(npm) 폰트, TDS `colors` / `typography` 토큰, `Text` 프리미티브
-- **인터랙션**: 버튼·리스트·아이콘 버튼 누를 때 **스케일 축소 + 딤 + 스프링 복귀**
+| 특징 | 설명 |
+|------|------|
+| **독립성** | Stackflow, Vite, Next.js 등 어떤 React 앱에서도 사용. 앱 코드에 대한 역방향 import 없음 |
+| **Provider** | `DSProvider`로 앱 루트를 감싼 뒤 컴포넌트 사용 (TDS `TDSMobileProvider` 패턴) |
+| **ParagraphText** | `Text`, `Top`, `ListRow.Texts` 등 텍스트 UI가 **하나의 typography 토큰 체계**를 공유 |
+| **아이콘** | 600+ SVG를 **번들에 넣지 않고** `fetch` + 메모리 캐시로 로드 |
+| **터치 피드백** | 버튼·리스트·아이콘 버튼 누를 때 **스케일 축소 + 딤 + 스프링 복귀** |
 
 ---
 
-## 빠른 시작 (현재 monorepo)
+## 목차
+
+1. [빠른 시작](#빠른-시작)
+2. [전체 구조 한눈에](#전체-구조-한눈에)
+3. [ParagraphText — 텍스트 공통 기반](#paragraphtext--텍스트-공통-기반)
+4. [컴포넌트 사용법](#컴포넌트-사용법)
+5. [화면 패턴](#화면-패턴)
+6. [아이콘 시스템](#아이콘-시스템)
+7. [터치 피드백 동작 원리](#터치-피드백-동작-원리)
+8. [DSProvider](#dsprovider)
+9. [토큰](#토큰)
+10. [추후 npm 설치](#추후-npm-설치)
+11. [주의사항](#주의사항)
+12. [로드맵](#로드맵)
+
+---
+
+## 빠른 시작
 
 ### 1. 스타일 로드 (호스트 앱 `src/index.css`)
 
 ```css
 @import 'pretendard/dist/web/variable/pretendardvariable.css';
 @import './design-system/styles/base.css';
-/* + 호스트 Tailwind @theme (colors.ts와 동기화) */
+/* Tailwind @theme — colors.ts·typography.ts와 동기화 */
 ```
 
 ### 2. Provider로 감싸기 (필수)
@@ -26,141 +45,87 @@
 // src/App.tsx
 import { DSProvider } from './design-system'
 
-function App() {
+export default function App() {
   return (
     <DSProvider>
-      {/* 라우터, Stackflow Stack, 페이지 등 */}
+      {/* Stackflow Stack, 라우터, 페이지 등 */}
     </DSProvider>
   )
 }
 ```
 
-### 3. 컴포넌트 사용
+`IconButton`은 `useDS()`를 사용하므로 **반드시** `DSProvider` 안에 있어야 합니다.
+
+### 3. 컴포넌트 import
 
 ```tsx
-import { Button, ListRow, Text, Top, ListHeader, Badge, Asset } from './design-system'
+import {
+  Text,
+  Button,
+  ListRow,
+  Top,
+  ListHeader,
+  Badge,
+  Asset,
+  Icon,
+  ICON,
+} from './design-system'
+```
 
+### 4. 최소 예시
+
+```tsx
 <Text typography="t5" color="grey700">본문</Text>
-<Button color="primary" variant="fill" onClick={handleSubmit}>확인</Button>
+
+<Button color="primary" variant="fill" display="full" onClick={handleSubmit}>
+  확인
+</Button>
+
+<ListRow
+  contents={
+    <ListRow.Texts
+      type="2RowTypeA"
+      top="화면 Push 전환"
+      topProps={{ fontWeight: 'semibold', color: 'grey900' }}
+      bottom="기본 스택 네비게이션"
+      bottomProps={{ color: 'grey500' }}
+    />
+  }
+  arrowType="right"
+  onClick={() => push('ScreenActivity', {})}
+/>
 ```
 
 ---
 
-## TDS Tier 1·2 컴포넌트 트리
+## 전체 구조 한눈에
+
+### 컴포넌트 계층
 
 ```
-ParagraphText (types/paragraphText.ts)
-  ├── Text
-  ├── TextButton
-  ├── Top.*Paragraph / ListHeader.*Paragraph
-  ├── ListRow.Texts
-  └── Badge
+ParagraphTextProps (types/paragraphText.ts)
+  └── ParagraphTextRenderer
+        ├── Text
+        ├── TextButton
+        ├── Top.TitleParagraph / Top.SubtitleParagraph
+        ├── ListHeader.*Paragraph
+        ├── ListRow.Texts
+        └── Badge
 
-Button (Action Primitive)
-  └── (3단계) FixedBottomCTA
+Button (Action Primitive — motion.button)
+ListRow (3-slot: left | contents | right) → Pressable
+TextButton → Pressable
+IconButton → Pressable + useDS().generateHaptic
+Asset.Frame + Asset.Icon → Icon (fetch)
 
-Top / ListHeader (Compound)
-ListRow (3-slot: left | contents | right)
-Asset.Frame + Asset.Icon
-icons/ (레지스트리 — SVG 추가)
+icons/
+  mono/ · fill/  →  scripts/generate-icon-registry.mjs
+                        →  registry.generated.ts (manifest)
+                        →  public/icons/ (정적 호스팅)
+                        →  Icon 컴포넌트 (fetch + 캐시)
 ```
 
-### Tier 1
-
-| 컴포넌트 | TDS 대응 | 예시 |
-|---------|----------|------|
-| `Text` | Text | `<Text typography="t5">본문</Text>` |
-| `Button` | Button v2 | `color` / `variant` / `size` / `display` |
-| `TextButton` | TextButton | `size` + `variant="arrow"` |
-| `Badge` | Badge | `size` + `variant` + `color` |
-| `Top` | Top compound | `Top.TitleParagraph`, `Top.SubtitleParagraph` |
-
-### Tier 2
-
-| 컴포넌트 | TDS 대응 | 예시 |
-|---------|----------|------|
-| `ListHeader` | ListHeader | `TitleParagraph`, `RightArrow` |
-| `ListRow` | ListRow v2 | `left` / `contents` / `right` 슬롯 |
-| `ListRow.Texts` | Texts preset | `2RowTypeA`, `3RowTypeA`, `Right1RowTypeE`, `Right2RowTypeB` |
-| `Asset.Icon` | Asset.Icon | `name` + `frameShape` |
-
-### 화면 패턴
-
-- **패턴 A** (서브 페이지): `Top` + `Text` + `Button`
-- **패턴 B** (카드·목록): `ListHeader` + `ListRow` × N + `Asset.Icon`
-- **패턴 C** (헤더 액션): `IconButton` + `TextButton` / `ListHeader.RightArrow`
-
----
-
-## 추후 npm 설치 시 (독립 패키지)
-
-패키지명 예시: `@stackflow-test/mobile-ds` (`package.json` 참고)
-
-```bash
-npm install @your-org/mobile-ds framer-motion pretendard
-```
-
-### 호스트 앱 설정
-
-```tsx
-// main.tsx 또는 App.tsx
-import { DSProvider, Button, Text } from '@your-org/mobile-ds'
-import '@your-org/mobile-ds/styles.css'
-import 'pretendard/dist/web/variable/pretendardvariable.css'
-```
-
-```tsx
-export function App() {
-  return (
-    <DSProvider config={{ hapticEnabled: true }}>
-      <YourAppRoutes />
-    </DSProvider>
-  )
-}
-```
-
-### peerDependencies
-
-| 패키지 | 필수 | 역할 |
-|--------|------|------|
-| `react`, `react-dom` | ✅ | 컴포넌트·훅 |
-| `framer-motion` | ✅ | press scale 애니메이션 |
-| `pretendard` | 선택 | 호스트 CSS에서 로드 권장 |
-
-### DSProvider config
-
-| 옵션 | 기본값 | 설명 |
-|------|--------|------|
-| `hapticEnabled` | `true` | `false`면 햅틱 no-op (시각 피드백은 유지) |
-
-```tsx
-<DSProvider config={{ hapticEnabled: false }}>
-  <App />
-</DSProvider>
-```
-
-### useDS()
-
-Provider 하위에서 전역 설정·햅틱에 접근합니다.
-
-```tsx
-import { useDS } from '@your-org/mobile-ds'
-
-function CustomTab() {
-  const { generateHaptic, reducedMotion, config } = useDS()
-  // generateHaptic('tickWeak') — IconButton과 동일 패턴
-}
-```
-
----
-
-## 한 줄 요약
-
-> 터치/클릭 이벤트를 `usePress`로 통일하고 → `useTouchEffect`가 상태를 관리하고 → Framer Motion이 스케일·딤을 애니메이션합니다.
-
----
-
-## 전체 구조
+### 터치 피드백 파이프라인
 
 ```
 사용자 터치/클릭
@@ -169,9 +134,9 @@ function CustomTab() {
        ↓
   useTouchEffect (pressed 상태 + DOM props)
        ↓
-  Framer Motion (scale 애니메이션) + TouchDimmer (딤 오버레이)
+  Framer Motion (scale) + TouchDimmer (딤 오버레이)
        ↓
-  Button / ListRow / IconButton (화면에 보이는 컴포넌트)
+  Button / ListRow / IconButton
 ```
 
 ```mermaid
@@ -207,405 +172,546 @@ flowchart TB
   IconButton --> Pressable --> useTouchEffect
 ```
 
----
-
-## 디렉토리 구조
+### 디렉토리 구조
 
 ```
-design-system/              # ← 독립 npm 패키지 루트 (package.json 포함)
-├── package.json            # 추후 npm publish용 manifest
-├── index.ts                # Public API (외부에서 import하는 유일한 진입점)
-├── styles/
-│   └── base.css            # press 딤 CSS 변수 (호스트에서 @import)
+design-system/
+├── package.json              # 추후 npm publish manifest
+├── index.ts                  # Public API (외부 import 진입점)
+├── README.md
+├── styles/base.css           # press 딤 CSS 변수
 ├── provider/
-│   ├── DSProvider.tsx      # 앱 루트 Provider (TDS TossProvider 패턴)
-│   ├── DSContext.ts        # useDS() 훅
-│   └── types.ts            # DSProviderConfig
-├── tokens/
-│   ├── colors.ts
-│   ├── typography.ts
-│   ├── motion.ts
-│   └── touch.ts
-├── hooks/
-├── context/
-│   └── TouchFeedbackContext.tsx  # deprecated alias → DSProvider
+│   ├── DSProvider.tsx
+│   ├── DSContext.ts          # useDS()
+│   └── types.ts
+├── tokens/                   # colors, typography, button, badge, asset, listRow, motion, touch
+├── types/paragraphText.ts
 ├── primitives/
+│   ├── ParagraphTextRenderer.tsx
+│   ├── Pressable.tsx
+│   └── TouchDimmer.tsx
+├── hooks/                    # usePress, useTouchEffect, useHaptic, useReducedMotion
 ├── components/
-└── README.md
+│   ├── Button/
+│   ├── TextButton/
+│   ├── Badge/
+│   ├── Top/
+│   ├── ListHeader/
+│   ├── ListRow/
+│   ├── Asset/
+│   └── IconButton.tsx
+└── icons/                    # → icons/README.md 참고
+    ├── mono/                 # 단색 SVG (667종)
+    ├── fill/
+    ├── registry.generated.ts # 자동 생성 manifest
+    ├── registry.ts           # fetch + 캐시
+    ├── Icon.tsx
+    └── index.ts
 ```
 
 ---
 
-## 레이어별 동작 설명
+## ParagraphText — 텍스트 공통 기반
 
-### 1. 토큰 (`tokens/`)
-
-#### colors.ts
-
-TDS와 동일한 hex 팔레트. `@toss/tds-colors` 대신 이 파일을 import한다.
+TDS의 `ParagraphTextProps`와 같이, **모든 텍스트 UI가 typography 토큰을 공유**합니다.
 
 ```tsx
-import { colors } from '../design-system'
-// colors.blue500, colors.grey900, colors.green500 ...
+// ❌ fontSize, lineHeight, text-sm, slate-* 직접 지정 금지
+<p className="text-sm text-slate-500">...</p>
+
+// ✅ typography + fontWeight + color 토큰
+<Text typography="t5" fontWeight="regular" color="grey700">본문</Text>
 ```
 
-Tailwind `@theme`(`src/index.css`)의 `--color-*`와 동기화를 유지한다.
+| typography | 용도 예시 |
+|------------|----------|
+| `t1`~`t3` | 페이지·섹션 제목 (`bold`/`semibold`) |
+| `t4`~`t5` | 일반 본문 |
+| `t6`~`t7`, `st10`~`st13` | 보조·캡션·메타 |
 
-#### typography.ts
+`ParagraphTextRenderer`를 직접 쓰기보다 `Text`, `Top.TitleParagraph` 등 **래퍼 컴포넌트**를 사용하세요.
 
-TDS typography 토큰(`t1`~`t7`, `st1`~`st13`)과 fontWeight(`regular`~`bold`).
+---
 
-```tsx
-import { getTypographyStyle } from '../design-system'
-getTypographyStyle('t5', 'regular') // { fontSize, lineHeight, fontWeight }
-```
+## 컴포넌트 사용법
 
-#### motion.ts / touch.ts
+### Tier 1
 
-| 상수 | 값 | 의미 |
-|------|-----|------|
-| `spring.rapid` | stiffness 1000, damping 55 | **누를 때** — 빠르게 작아짐 |
-| `spring.quick` | stiffness 800, damping 55 | **뗄 때** — 빠르게 원래 크기로 (약한 탄성) |
-| `touchScale.default` | 0.96 | Button, ListRow 등 일반 요소 |
-| `touchScale.compact` | 0.9 | IconButton 등 작은 히트 영역 |
-| `PRESS_HOLD_MS` | 300 | 손을 뗀 뒤에도 눌림 상태를 잠깐 유지 |
+#### `Text`
 
-### 2. Text 프리미티브
-
-`fontSize`/`lineHeight` 하드코딩 대신 typography 토큰을 쓴다.
+기본 텍스트 프리미티브. `as`로 시맨틱 태그를 지정할 수 있습니다.
 
 ```tsx
-import { Text } from '../design-system'
-
-<Text typography="t3" fontWeight="bold" color="grey900">제목</Text>
+<Text typography="t3" fontWeight="bold" color="grey900" as="h1">제목</Text>
 <Text typography="t5">본문</Text>
-<Text typography="t6" color="grey500">보조</Text>
+<Text typography="t6" color="grey500">보조 설명</Text>
 ```
 
-폰트는 npm `pretendard` (Variable)를 `src/index.css`에서 로드한다.
+#### `Button` (TDS Button v2)
 
----
-
-### 3. `usePress` — 터치 이벤트 정규화
-
-TDS의 `it` 훅과 같은 역할입니다. 브라우저마다 다른 이벤트를 **하나의 press 언어**로 바꿉니다.
-
-| 브라우저 이벤트 | 변환 결과 |
-|----------------|----------|
-| `onTouchStart` | `onPressStart` |
-| `onTouchEnd` | `onPressEnd` |
-| `onTouchCancel` | `onPressCancel` |
-| `onMouseDown` (좌클릭) | `onPressStart` |
-| `window.mouseup` | `onPressEnd` (데스크톱) |
-
-#### 300ms 유지가 있는 이유
-
-손가락을 뗀 직후에도 약 300ms 동안 "눌린" 상태를 유지합니다. 너무 빨리 원래 크기로 돌아가면 눌림이 안 보이거나 깜빡이는 느낌이 납니다. TDS도 같은 패턴을 씁니다.
-
-```
-[누름]  → onPressStart 즉시 호출
-[뗌]    → 300ms 후 onPressEnd 호출
-```
-
-#### 반환값
-
-DOM 요소에 그대로 spread할 수 있는 props를 돌려줍니다.
-
-```ts
-{ onTouchStart, onTouchEnd, onTouchCancel, onMouseDown }
-```
-
----
-
-### 4. `useTouchEffect` — press + hover 합치기
-
-TDS의 `En` 훅과 같은 역할입니다. `usePress` 위에 **React 상태**를 얹습니다.
-
-- `pressed` — 지금 눌려 있는지 (딤 레이어 opacity에 사용)
-- `hovered` — 마우스가 올라가 있는지 (데스크톱)
-- `touchEffectProps` — DOM에 spread할 이벤트 묶음
-
-```ts
-const { pressed, touchEffectProps } = useTouchEffect({
-  onPressStart: () => { /* 스케일 줄이기 */ },
-  onPressEnd:   () => { /* 스케일 복귀 */ },
-})
-```
-
-`onPressStart` / `onPressEnd`는 `usePress`를 거치므로, **뗄 때 콜백도 300ms 뒤에** 실행됩니다.
-
----
-
-### 5. `TouchDimmer` — 딤(어두워짐) 레이어
-
-스케일만으로는 TDS 느낌의 50%밖에 안 납니다. 실제로는 **2레이어**입니다.
-
-1. **스케일** — 요소 전체가 `transform: scale(...)`로 작아짐
-2. **딤** — 위에 겹친 반투명 오버레이의 `opacity`가 올라감
-
-| variant | 용도 | CSS 변수 |
-|---------|------|----------|
-| `radial` | Button | `--press-dimmer-radial` (중앙에서 퍼지는 그라데이션) |
-| `grey` | ListRow, IconButton | `--press-dimmer-color` (단색 반투명) |
-
-색상은 [`index.css`](../index.css)의 `:root`에서 바꿀 수 있습니다.
-
----
-
-### 6. `Pressable` — 범용 눌림 래퍼
-
-`motion.div` + `useTouchEffect` + `TouchDimmer`를 합친 **가장 범용적인 블록**입니다.
-
-`ListRow`, `IconButton`이 내부적으로 이걸 사용합니다.
-
-```
-┌─────────────────────────────┐
-│  motion.div (scale 애니메이션) │
-│  ┌───────────────────────┐  │
-│  │  children (콘텐츠)     │  │
-│  └───────────────────────┘  │
-│  ┌───────────────────────┐  │
-│  │  TouchDimmer (absolute)│  │
-│  └───────────────────────┘  │
-└─────────────────────────────┘
-```
-
----
-
-### 7. 컴포넌트별 스펙
-
-| 컴포넌트 | 기반 | scale | 딤 | 특이사항 |
-|---------|------|-------|-----|---------|
-| `Button` | `motion.button` | 0.96 | radial | color: primary/dark/danger/light, variant: fill/weak |
-| `ListRow` | `Pressable` | 0.96 | grey | title + description + value 슬롯 |
-| `IconButton` | `Pressable` | 0.9 | grey | press 시 햅틱 `tickWeak` |
-
-**바텀시트·모달 컨테이너 자체는 줄어들지 않습니다.** Stackflow UI가 시트 등장을 담당하고, 안의 버튼·리스트만 이 DS 애니메이션을 씁니다.
-
----
-
-## 햅틱 (`useHaptic`) 상세
-
-### 무엇을 하나요?
-
-모바일 기기의 **짧은 진동**을 발생시킵니다. 브라우저 표준 API인 `navigator.vibrate()`를 사용합니다.
-
-```ts
-// useHaptic.ts
-const HAPTIC_PATTERNS = {
-  tickWeak: 10,              // 10ms 짧은 한 번 (탭 느낌)
-  softWeak: [15, 30, 15],    // 15ms 진동 → 30ms 쉼 → 15ms 진동
-}
-```
-
-| 타입 | 패턴 | 쓰이는 곳 |
-|------|------|----------|
-| `tickWeak` | `10` (10ms) | `IconButton` — 하단 탭 전환 |
-| `softWeak` | `[15, 30, 15]` | 아직 미사용, 키패드 등에 예약 |
-
-### 호출 흐름
-
-```
-IconButton onPressStart
-       ↓
-useDS().generateHaptic('tickWeak')
-       ↓
-DSProvider (context)
-       ↓
-useHaptic().generate('tickWeak')
-       ↓
-navigator.vibrate(10)
-```
-
-Provider를 거치는 이유: 나중에 햅틱 on/off 설정, iOS WebView 분기 등을 **한곳에서** 제어하기 위해서입니다.
-
-### 햅틱이 동작하지 않는 경우 (정상)
-
-| 환경 | 이유 |
-|------|------|
-| 데스크톱 PC | `navigator.vibrate` 없음 → 조용히 무시 |
-| iOS Safari | 대부분 `vibrate` 미지원 → 무시 |
-| 사용자 설정 | 기기에서 진동 꺼짐 |
-| SSR | `navigator` 없음 → 무시 |
-
-코드는 실패하지 않고 **그냥 return**합니다. 에러를 던지지 않습니다.
-
-```ts
-if (typeof navigator === 'undefined' || !navigator.vibrate) return
-```
-
-### 유의사항
-
-- 햅틱은 **시각 피드백을 대체하지 않습니다.** 진동이 안 되는 환경이 많으므로 scale + 딤이 항상 함께 있어야 합니다.
-- `IconButton`만 햅틱을 쓰고, `Button`/`ListRow`는 시각만 — TDS와 같은 구분입니다.
-- 연속 호출 시 이전 진동이 취소될 수 있습니다. 탭 전환처럼 가끔 누르는 UI에 적합합니다.
-
----
-
-## Provider (`DSProvider`)
-
-TDS `TDSMobileProvider`와 동일한 패턴. [`App.tsx`](../App.tsx)에서 앱 루트를 감쌉니다.
+| prop | 값 | 기본값 |
+|------|-----|--------|
+| `color` | `primary` · `dark` · `danger` · `light` | `primary` |
+| `variant` | `fill` · `weak` | `fill` |
+| `size` | `small` · `medium` · `large` · `xlarge` | `medium` |
+| `display` | `inline` · `block` · `full` | `block` |
+| `loading` | `boolean` | `false` |
 
 ```tsx
-<DSProvider config={{ hapticEnabled: true }}>
-  <Stack />
-</DSProvider>
-```
-
-| 제공 값 (`useDS()`) | 설명 |
-|---------|------|
-| `reducedMotion` | `prefers-reduced-motion: reduce` 감지 |
-| `generateHaptic` | 햅틱 발생 함수 (`hapticEnabled: false`면 no-op) |
-| `config` | 병합된 Provider 설정 |
-
-`useDS()`는 Provider 밖에서 쓰면 **에러를 던집니다.** `IconButton`은 반드시 `DSProvider` 안에 있어야 합니다.
-
-> `TouchFeedbackProvider` / `useTouchFeedback`은 하위 호환 alias이며 deprecated입니다.
-
-`reducedMotion`은 context에 올려두었지만, 현재 press scale은 **의도적으로 끄지 않습니다** (TDS와 동일). 나중에 시트 등장·툴팁 같은 큰 모션에만 적용할 예정입니다.
-
----
-
-## 사용법
-
-### import
-
-```tsx
-import { DSProvider, Button, ListRow, IconButton, Text, colors } from '../design-system'
-```
-
-### Button
-
-```tsx
-<Button variant="primary" fullWidth onClick={handleClick}>
-  확인
+// 서브 페이지 CTA
+<Button color="primary" variant="fill" display="full" onClick={handleNext}>
+  다음 화면 Push
 </Button>
 
-<Button variant="buy">매수</Button>
-<Button variant="sell">매도</Button>
-<Button variant="secondary">취소</Button>
+// 보조 액션
+<Button color="light" variant="fill" display="full" onClick={openSheet}>
+  바텀시트 열기
+</Button>
+
+// 거래 화면 — 매수/매도
+<Button color="primary" variant="fill" size="large" display="full">매수</Button>
+<Button color="danger" variant="fill" size="large" display="full">매도</Button>
 ```
 
-### ListRow
+> 이전 `variant="buy"` / `variant="sell"` API는 제거되었습니다. `color="primary"` / `color="danger"`를 사용하세요.
+
+#### `TextButton`
+
+박스 없는 텍스트 액션. `size`는 필수입니다.
+
+```tsx
+<TextButton size="medium" onClick={handleMore}>
+  더보기
+</TextButton>
+
+<TextButton size="small" variant="arrow" onClick={handleAll}>
+  전체 보기
+</TextButton>
+```
+
+| prop | 값 |
+|------|-----|
+| `size` | `small` · `medium` · `large` (필수) |
+| `variant` | `clear` · `underline` · `arrow` |
+| `color` | `ColorToken` (기본 `blue500`) |
+
+#### `Badge`
+
+상태·라벨 capsule.
+
+```tsx
+<Badge size="small" variant="fill" color="blue">신규</Badge>
+<Badge size="medium" variant="weak" color="red">마감</Badge>
+```
+
+#### `Top` (Compound)
+
+페이지 상단 영역. `AppScreen` appBar 아래 본문 헤더로 사용합니다.
+
+```tsx
+<Top
+  title={
+    <Top.TitleParagraph typography="t3" fontWeight="bold">
+      스택 네비게이션
+    </Top.TitleParagraph>
+  }
+  subtitleBottom={
+    <Top.SubtitleParagraph>
+      현재 스택 깊이:{' '}
+      <Text typography="t6" fontWeight="bold" color="grey900" as="strong">
+        {depth}
+      </Text>
+    </Top.SubtitleParagraph>
+  }
+/>
+```
+
+| 슬롯 | 설명 |
+|------|------|
+| `title` | 메인 제목 (필수) |
+| `subtitleTop` | 제목 위 보조 |
+| `subtitleBottom` | 제목 아래 보조 |
+| `rightButton` | 우측 액션 |
+| `lowerButton` | 하단 액션 |
+
+---
+
+### Tier 2
+
+#### `ListHeader` (Compound)
+
+섹션 헤더. 목록 블록 위에 배치합니다.
+
+```tsx
+<ListHeader
+  title={
+    <ListHeader.TitleParagraph typography="t4" fontWeight="bold">
+      최근 거래
+    </ListHeader.TitleParagraph>
+  }
+  description={
+    <ListHeader.DescriptionParagraph color="grey500">
+      최근 7일
+    </ListHeader.DescriptionParagraph>
+  }
+  right={<ListHeader.RightArrow onClick={handleAll} />}
+/>
+```
+
+#### `ListRow` v2 (3-slot Compound)
+
+TDS ListRow v2와 같이 `left` · `contents` · `right` 슬롯으로 구성합니다.
 
 ```tsx
 <ListRow
-  title="화면 Push 전환"
-  description="기본 스택 네비게이션"
-  onClick={() => push('ScreenActivity', {})}
+  left={<Asset.Icon name={ICON.HOURGLASS} frameShape="CircleSmall" />}
+  contents={
+    <ListRow.Texts
+      type="2RowTypeA"
+      top="화면 Push 전환"
+      topProps={{ fontWeight: 'semibold', color: 'grey900' }}
+      bottom="기본 스택 네비게이션"
+      bottomProps={{ color: 'grey500' }}
+    />
+  }
+  right={
+    <ListRow.Texts
+      type="Right1RowTypeE"
+      top="₩12,450,000"
+      topProps={{ fontWeight: 'bold', color: 'grey900' }}
+    />
+  }
+  arrowType="right"
+  verticalPadding="medium"
+  onClick={handleClick}
 />
-
-<ListRow title="내 자산" value="₩12,450,000" />
 ```
 
-### IconButton
+| prop | 값 | 기본값 |
+|------|-----|--------|
+| `arrowType` | `none` · `right` | `none` |
+| `verticalPadding` | `small` · `medium` · `large` | `medium` |
+| `withTouchEffect` | `boolean` | `true` |
+| `onClick` | 없으면 정적 `div`, 있으면 `Pressable` | — |
+
+**`ListRow.Texts` preset**
+
+| type | 행 구성 | 정렬 |
+|------|---------|------|
+| `2RowTypeA` | top + bottom | 왼쪽 |
+| `3RowTypeA` | top + middle + bottom | 왼쪽 |
+| `Right1RowTypeE` | top | 오른쪽 |
+| `Right2RowTypeB` | top + bottom | 오른쪽 |
+
+문자열을 넘기면 기본 typography가 적용됩니다. `topProps` 등으로 `fontWeight`, `color`를 덮어쓸 수 있습니다.
+
+#### `Asset` (Compound)
+
+아이콘·이미지를 프레임 안에 배치합니다.
+
+```tsx
+<Asset.Icon
+  name="icon-u231B-mono"
+  frameShape="CircleSmall"
+  backgroundColor="grey100"
+  color="grey600"
+/>
+```
+
+| `frameShape` | 용도 |
+|--------------|------|
+| `CircleSmall` | ListRow left 슬롯 |
+| `CircleMedium` | 중간 크기 |
+| `Squircle` | 앱 아이콘형 |
+
+#### `IconButton`
+
+하단 탭 등 **아이콘 + 라벨** 버튼. 3단계에서 TDS API(`variant`, `iconSize`)로 확장 예정.
 
 ```tsx
 <IconButton active={isActive} label="홈" onClick={handleTab}>
-  <HomeIcon />
+  <Icon name={ICON.USER} size={24} color={isActive ? 'blue500' : 'grey500'} />
 </IconButton>
 ```
 
-### 새 컴포넌트 만들 때
-
-raw `<button>` + `active:bg-*` Tailwind 대신:
-
-1. 클릭 가능한 카드/행 → `ListRow` 또는 `Pressable`
-2. CTA/액션 버튼 → `Button`
-3. 작은 아이콘 + 라벨 → `IconButton`
+`onPressStart` 시 `generateHaptic('tickWeak')`가 호출됩니다.
 
 ---
 
-## 눌림 한 사이클 타임라인
+## 화면 패턴
+
+실제 Activity에서 쓰는 조합입니다.
+
+### 패턴 A — 서브 페이지 (`ScreenActivity`)
+
+`Top` + `Button` 여러 개
 
 ```
-0ms     touchstart / mousedown
-        → onPressStart
-        → scale: 1 → 0.96 (rapid 스프링)
-        → dimmer opacity: 0 → 1
-
-?ms     touchend / mouseup
-        → 300ms 타이머 시작
-
-+300ms  onPressEnd
-        → scale: 0.96 → 1 (quick 스프링, 살짝 튕김)
-        → dimmer opacity: 1 → 0
-
-?ms     onClick (브라우저 기본, press와 별개)
-        → 실제 비즈니스 로직 실행
+AppScreen (appBar)
+  └── Top (제목 + 부제)
+  └── Button × N (full width CTA)
 ```
 
-**press(시각)와 click(동작)은 분리**되어 있습니다. 눌림 애니메이션은 빠르게 보여주고, `onClick`은 브라우저가 판단하는 시점에 실행됩니다.
+### 패턴 B — 카드 목록 (`HomeTabActivity`)
+
+`Text` 안내 + `ListRow` 카드
+
+```
+AppScreen
+  └── Text (안내 문구)
+  └── ul > li (border 카드)
+        └── ListRow.Texts (2RowTypeA) + arrowType="right"
+```
+
+### 패턴 C — 거래·액션 (`TradeTabActivity`)
+
+가격 표시 + `Button` 그리드
+
+```
+Text (티커) + Text (가격, t1) + Text (등락)
+Button color="primary" (매수) | Button color="danger" (매도)
+```
+
+### 패턴 D — 섹션 목록 (예정)
+
+`ListHeader` + `ListRow` × N + `Asset.Icon`
 
 ---
 
-## 성능 관련 처리
+## 아이콘 시스템
 
-컴포넌트에 공통으로 들어가는 스타일:
+600개 이상 SVG를 **JS 번들에 포함하지 않습니다.** 빌드 시 `public/icons/`로 복사하고, 런타임에 `fetch`합니다.
 
-```ts
-willChange: 'transform'
-WebkitTapHighlightColor: 'transparent'  // iOS 파란 하이라이트 제거
-transform: 'translateZ(0)'              // GPU 레이어 힌트
+```
+mono/icon-foo-mono.svg
+       ↓  npm run icons:generate
+registry.generated.ts (name → filename)
+public/icons/mono/icon-foo-mono.svg
+       ↓  <Icon name="icon-foo-mono" />
+fetch → prepareMonoSvg (currentColor 치환) → 메모리 캐시 → 렌더
 ```
 
-`TouchDimmer`는 `pointer-events-none`이라 터치를 가로채지 않습니다.
-
----
-
-## 주의사항 & 흔한 실수
-
-### 1. raw `<button>` + `active:` CSS 쓰지 않기
+| 항목 | 설명 |
+|------|------|
+| **mono** | `color` prop으로 색상 변경 (`currentColor` 치환) |
+| **fill** | SVG 원본 색상 유지 |
+| **ICON 상수** | 자주 쓰는 name (`ICON.ARROW_RIGHT` 등) |
+| **TypeScript** | `IconName` 타입으로 자동완성 |
 
 ```tsx
-// ❌ DS 밖 — 스케일·스프링·딤 없음
-<button className="active:bg-grey-50">...</button>
+import { Icon, ICON } from './design-system'
 
-// ❌ text-sm, slate-* 등 비토큰 타이포/색상
-<p className="text-sm text-slate-500">...</p>
-
-// ✅
-<Button variant="secondary">...</Button>
-<Text typography="t6" color="grey500">...</Text>
+<Icon name="icon-arrow-right-mono" size={24} color="grey600" />
+<Icon name={ICON.HOURGLASS} size={18} color="blue500" />
 ```
 
-### 2. `IconButton`은 DSProvider 필수
-
-Provider 없이 쓰면 `useDS must be used within DSProvider` 에러가 납니다.
-
-### 3. `ListRow`는 `div` 기반
-
-시맨틱 `<button>`이 아니라 `Pressable`(div) + `role="button"`입니다. 키보드 Enter/Space는 `onKeyDown`으로 처리합니다.
-
-### 4. 중첩 press 주의
-
-`usePress`의 `onTouchStart`에서 `event.stopPropagation()`을 호출합니다. Pressable 안에 또 Pressable을 넣으면 이벤트가 꼬일 수 있습니다.
-
-### 5. `disabled`일 때
-
-`usePress`가 no-op, `onClick`도 `undefined`로 막습니다. 애니메이션과 클릭 모두 비활성화됩니다.
-
-### 6. 데스크톱에서 마우스가 요소 밖으로 나갈 때
-
-`useTouchEffect`의 `onMouseLeave`가 press를 강제 해제합니다. 버튼 밖에서 mouseup해도 정상 복귀합니다.
-
-### 7. 햅틱 기대치
-
-데스크톱 개발 중에는 진동이 없습니다. 모바일 실기기 또는 Android Chrome에서 확인하세요.
-
-### 8. 숫자 조정은 tokens만
-
-스케일을 0.94로 바꾸고 싶다면 `tokens/touch.ts`만 수정하세요. 컴포넌트마다 숫자를 하드코딩하지 마세요.
+아이콘 추가·파일명 규칙·동작 상세는 [`icons/README.md`](./icons/README.md)를 참고하세요.
 
 ---
 
-## 아직 구현되지 않은 것 (후속 작업)
+## 터치 피드백 동작 원리
 
-- `Switch`, `FixedBottomCTA`, `NumberKeypad` 컴포넌트
-- iOS 스와이프 백 영역(화면 왼쪽 30px) press 스킵 — `ListRow` prop으로 추가 예정
-- Stackflow `AppScreen` appBar 뒤로가기 버튼 커스텀 프레스
-- `reducedMotion`을 큰 전환 애니메이션에 연결
-- `softWeak` 햅틱을 NumberKeypad 등에 적용
+> 터치/클릭 → `usePress` 정규화 → `useTouchEffect` 상태 → Framer Motion 스케일 + `TouchDimmer` 딤
+
+### `usePress` — 이벤트 정규화
+
+| 브라우저 이벤트 | 변환 |
+|----------------|------|
+| `onTouchStart` | `onPressStart` |
+| `onTouchEnd` | `onPressEnd` (300ms 지연) |
+| `onMouseDown` | `onPressStart` |
+| `window.mouseup` | `onPressEnd` |
+
+**300ms 유지**: 손을 뗀 직후에도 잠깐 눌린 상태를 유지해 깜빡임을 방지합니다 (TDS와 동일).
+
+### `TouchDimmer` — 2레이어 피드백
+
+1. **스케일** — `transform: scale(0.96)` (IconButton은 `0.9`)
+2. **딤** — 위에 겹친 반투명 오버레이
+
+| variant | 사용처 |
+|---------|--------|
+| `radial` | `Button` |
+| `grey` | `ListRow`, `TextButton`, `IconButton` |
+
+### 컴포넌트별 스펙
+
+| 컴포넌트 | 기반 | scale | 딤 | 햅틱 |
+|---------|------|-------|-----|------|
+| `Button` | `motion.button` | 0.96 | radial | — |
+| `ListRow` | `Pressable` | 0.96 | grey | — |
+| `TextButton` | `Pressable` | 0.96 | grey | — |
+| `IconButton` | `Pressable` | 0.9 | grey | `tickWeak` |
+
+### 눌림 타임라인
+
+```
+0ms     touchstart → scale 1→0.96, dimmer 0→1
+?ms     touchend → 300ms 타이머
++300ms  scale 0.96→1, dimmer 1→0
+?ms     onClick (브라우저, press와 별개)
+```
+
+**press(시각)와 click(동작)은 분리**되어 있습니다.
+
+### 햅틱 (`useHaptic`)
+
+| 타입 | 패턴 | 사용처 |
+|------|------|--------|
+| `tickWeak` | 10ms | `IconButton` 탭 전환 |
+| `softWeak` | [15,30,15] | 예약 (키패드 등) |
+
+데스크톱·iOS Safari에서는 `navigator.vibrate` 미지원 → 조용히 무시. 시각 피드백이 항상 함께 있어야 합니다.
+
+---
+
+## DSProvider
+
+```tsx
+<DSProvider config={{ hapticEnabled: true }}>
+  <App />
+</DSProvider>
+```
+
+| `useDS()` 값 | 설명 |
+|-------------|------|
+| `reducedMotion` | `prefers-reduced-motion` 감지 (press scale은 현재 유지) |
+| `generateHaptic` | `hapticEnabled: false`면 no-op |
+| `config` | 병합된 Provider 설정 |
+
+> `TouchFeedbackProvider` / `useTouchFeedback`은 deprecated alias입니다.
+
+---
+
+## 토큰
+
+### colors (`tokens/colors.ts`)
+
+TDS hex 팔레트. Tailwind `@theme`(`src/index.css`)와 동기화합니다.
+
+```tsx
+import { colors } from './design-system'
+// colors.blue500, colors.grey900 ...
+```
+
+### typography (`tokens/typography.ts`)
+
+```tsx
+import { getTypographyStyle } from './design-system'
+getTypographyStyle('t5', 'regular') // { fontSize, lineHeight, fontWeight }
+```
+
+### motion / touch
+
+| 상수 | 값 | 의미 |
+|------|-----|------|
+| `spring.rapid` | stiffness 1000, damping 55 | 누를 때 |
+| `spring.quick` | stiffness 800, damping 55 | 뗄 때 |
+| `touchScale.default` | 0.96 | Button, ListRow |
+| `touchScale.compact` | 0.9 | IconButton |
+| `PRESS_HOLD_MS` | 300 | 눌림 유지 시간 |
+
+스케일·스프링 값은 **컴포넌트가 아닌 `tokens/`만** 수정하세요.
+
+---
+
+## 추후 npm 설치
+
+패키지명 예시: `@stackflow-test/mobile-ds` (`package.json` 참고)
+
+```bash
+npm install @your-org/mobile-ds framer-motion pretendard
+```
+
+```tsx
+import { DSProvider, Button, Text } from '@your-org/mobile-ds'
+import '@your-org/mobile-ds/styles.css'
+import 'pretendard/dist/web/variable/pretendardvariable.css'
+
+export function App() {
+  return (
+    <DSProvider config={{ hapticEnabled: true }}>
+      <YourApp />
+    </DSProvider>
+  )
+}
+```
+
+| peerDependency | 필수 | 역할 |
+|----------------|------|------|
+| `react`, `react-dom` | ✅ | 컴포넌트·훅 |
+| `framer-motion` | ✅ | press scale |
+| `pretendard` | 선택 | 호스트 CSS에서 로드 권장 |
+
+---
+
+## 주의사항
+
+### 1. raw `<button>` + `active:` CSS 금지
+
+```tsx
+// ❌
+<button className="active:bg-grey-50">...</button>
+
+// ✅
+<Button color="light" variant="fill">...</Button>
+```
+
+### 2. typography·색상 토큰 사용
+
+```tsx
+// ❌ text-sm, slate-*, fontSize 인라인
+// ✅ <Text typography="t6" color="grey500">
+```
+
+### 3. `IconButton`은 DSProvider 필수
+
+Provider 밖에서 `useDS must be used within DSProvider` 에러.
+
+### 4. `ListRow`는 `div` + `role="button"`
+
+시맨틱 `<button>`이 아닙니다. Enter/Space는 `onKeyDown` 처리.
+
+### 5. 중첩 Pressable 주의
+
+`usePress`가 `stopPropagation`을 호출합니다. Pressable 안에 Pressable을 넣지 마세요.
+
+### 6. 바텀시트·모달 컨테이너
+
+시트/모달 **컨테이너 자체**는 줄어들지 않습니다. 안의 버튼·리스트만 DS 애니메이션을 씁니다.
+
+### 7. 아이콘 빌드
+
+`dev` / `build` 전에 `icons:generate`가 자동 실행됩니다. SVG 추가 후 manifest가 갱신되는지 확인하세요.
+
+---
+
+## 로드맵
+
+| 항목 | 상태 |
+|------|------|
+| Tier 1·2 컴포넌트 | ✅ |
+| SVG 아이콘 레지스트리 (667 mono) | ✅ |
+| `FixedBottomCTA` | 예정 |
+| `IconButton` TDS API (`variant`, `iconSize`, `aria-label`) | 예정 |
+| `DSProvider` `brandPrimaryColor` / `fontScaleAvailable` | 예정 |
+| iOS 스와이프 백 영역 press 스킵 | 예정 |
+| `Switch`, `NumberKeypad` | 예정 |
+
+---
+
+## TDS 대응 관계
+
+| TDS | 이 프로젝트 |
+|-----|------------|
+| `ParagraphTextProps` | `types/paragraphText.ts` |
+| Button v2 (`color`/`variant`) | `components/Button/Button.tsx` |
+| ListRow v2 (3-slot) | `components/ListRow/` |
+| `it` (press hook) | `usePress` |
+| `En` (touchEffectProps) | `useTouchEffect` |
+| TDS Provider | `DSProvider` |
+| `@toss/tds-colors` | `tokens/colors.ts` |
+| `@toss/tds-mobile` typography | `tokens/typography.ts` + `Text` |
 
 ---
 
@@ -613,22 +719,6 @@ Provider 없이 쓰면 `useDS must be used within DSProvider` 에러가 납니�
 
 | 패키지 | 역할 |
 |--------|------|
-| `pretendard` | 기본 sans-serif 폰트 (Variable) |
-| `framer-motion` | scale·opacity 스프링 애니메이션 |
+| `pretendard` | 기본 sans-serif (Variable) |
+| `framer-motion` | scale·opacity 스프링 |
 | `react` | 훅, Context, 컴포넌트 |
-
-Rally 등 별도 애니메이션 엔진은 사용하지 않습니다. Framer Motion 하나로 통일했습니다.
-
----
-
-## 참고: TDS와의 대응 관계
-
-| TDS | 이 프로젝트 |
-|-----|------------|
-| `it` (press hook) | `usePress` |
-| `En` (touchEffectProps) | `useTouchEffect` |
-| rapid / quick 스프링 | `tokens/motion.ts` |
-| Button (Framer Motion) | `components/Button.tsx` |
-| ListRow (Rally) | `components/ListRow.tsx` → `Pressable` + Framer Motion |
-| TDS Provider | `DSProvider` |
-| `useHaptic().generate()` | `useHaptic` + context `generateHaptic` |
