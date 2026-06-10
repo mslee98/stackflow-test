@@ -1,0 +1,47 @@
+{
+  "name": "@stackflow-test/mobile-ds",
+  "version": "0.1.0",
+  "description": "범용 모바일 터치 피드백 디자인 시스템. TDS 토큰 체계 + Framer Motion press 애니메이션. Stackflow 등 특정 프레임워크에 종속되지 않습니다.",
+  "type": "module",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    },
+    "./styles.css": "./styles/base.css"
+  },
+  "files": [
+    "index.ts",
+    "types",
+    "components",
+    "context",
+    "hooks",
+    "icons",
+    "primitives",
+    "provider",
+    "tokens",
+    "styles",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "framer-motion": ">=11.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pretendard": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "design-system",
+    "touch-feedback",
+    "mobile",
+    "react",
+    "framer-motion"
+  ],
+  "license": "MIT"
+}

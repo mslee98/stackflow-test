@@ -1,0 +1,35 @@
+/**
+ * Design System 기본 CSS 변수.
+ *
+ * 호스트 앱의 진입 CSS(예: src/index.css)에서 import합니다.
+ *
+ * @example
+ * ```css
+ * @import 'pretendard/dist/web/variable/pretendardvariable.css';
+ * @import '../design-system/styles/base.css';
+ * ```
+ *
+ * Tailwind @theme 색상·typography 유틸은 호스트 앱이 colors.ts와 동기화해 등록합니다.
+ * (패키지 분리 시 호스트 README 참고)
+ */
+
+:root {
+  --press-dimmer-color: rgba(0, 0, 0, 0.08);
+  --press-dimmer-radial: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.12) 0%,
+    transparent 70%
+  );
+
+  /* Button v2 — color × variant (index.css @theme과 동기화) */
+  --button-primary-fill-bg: #3182f6;
+  --button-primary-fill-text: #ffffff;
+  --button-primary-weak-bg: #e8f3ff;
+  --button-primary-weak-text: #3182f6;
+  --button-dark-fill-bg: #191f28;
+  --button-dark-fill-text: #ffffff;
+  --button-danger-fill-bg: #f04452;
+  --button-danger-fill-text: #ffffff;
+  --button-light-fill-bg: #ffffff;
+  --button-light-fill-border: #e5e8eb;
+}
